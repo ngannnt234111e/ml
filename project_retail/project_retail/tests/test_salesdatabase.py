@@ -1,11 +1,17 @@
 
 import numpy as np
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import KMeans
 
 from project_retail.project_retail.connectors.connector import Connector
+from project_retail.project_retail.models.customer_clustering import (
+    get_cluster_details,
+    print_customers_by_cluster,
+    export_clusters_to_excel,
+)
 
 conn=Connector(database="salesdatabase")
 conn.connect()
@@ -84,6 +90,15 @@ print(labels)
 
 df2['cluster'] = labels
 
+# In chi tiết và xuất Excel cho kịch bản 2D
+df2_2d = df2[['CustomerId', 'Age', 'Annual Income', 'Spending Score']].copy()
+df2_2d['cluster'] = labels.astype(int)
+details_2d = get_cluster_details(conn, df2_2d)
+print("\n=== Chi tiết khách theo cụm (2D: Age + Spending Score, k=4) ===")
+print_customers_by_cluster(details_2d)
+export_clusters_to_excel(details_2d, "customer_clusters_2d_test_salesdatabase.xlsx")
+print("Excel (2D) saved:", os.path.abspath("customer_clusters_2d_test_salesdatabase.xlsx"))
+
 def visualizeKMeans(X, y_kmeans, cluster, title, xlabel, ylabel, colors):
     plt.figure(figsize=(10, 10))
     for i in range(cluster):
@@ -137,3 +152,12 @@ def visualize3DKmeans(df, columns, hover_data, cluster):
     fig.show()
 
 visualize3DKmeans(df2, columns, df2.columns, cluster)
+
+# In chi tiết và xuất Excel cho kịch bản 3D
+df2_3d = df2[['CustomerId', 'Age', 'Annual Income', 'Spending Score']].copy()
+df2_3d['cluster'] = labels.astype(int)
+details_3d = get_cluster_details(conn, df2_3d)
+print("\n=== Chi tiết khách theo cụm (3D: Age + Annual Income + Spending Score, k=5, scaled) ===")
+print_customers_by_cluster(details_3d)
+export_clusters_to_excel(details_3d, "customer_clusters_3d_test_salesdatabase.xlsx")
+print("Excel (3D) saved:", os.path.abspath("customer_clusters_3d_test_salesdatabase.xlsx"))
